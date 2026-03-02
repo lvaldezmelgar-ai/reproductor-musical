@@ -212,6 +212,56 @@ document.getElementById("audioPlayer").addEventListener("ended", nextSong);
 startShuffle();
 loadSong(currentIndex);
 
+function visualize(){
+
+const bufferLength = analyser.frequencyBinCount;
+const dataArray = new Uint8Array(bufferLength);
+
+function animate(){
+requestAnimationFrame(animate);
+
+analyser.getByteFrequencyData(dataArray);
+
+let sum = 0;
+for(let i = 0; i < bufferLength; i++){
+sum += dataArray[i];
+}
+
+let average = sum / bufferLength;
+
+// Hace que el fondo pulse con la música
+document.body.style.filter = `brightness(${1 + average/200})`;
+
+}
+
+animate();
+}
+
+let audioContext;
+let analyser;
+let source;
+
+document.addEventListener("click", iniciarAudio);
+
+function iniciarAudio(){
+
+if(!audioContext){
+audioContext = new (window.AudioContext || window.webkitAudioContext)();
+analyser = audioContext.createAnalyser();
+
+const audio = document.getElementById("audioPlayer");
+source = audioContext.createMediaElementSource(audio);
+
+source.connect(analyser);
+analyser.connect(audioContext.destination);
+
+analyser.fftSize = 256;
+
+visualize();
+}
+
+document.removeEventListener("click", iniciarAudio);
+}
 </script>
 
 </body>
