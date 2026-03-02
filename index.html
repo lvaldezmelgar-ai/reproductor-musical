@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Recomendador Musical</title>
+
+<style>
+body{
+margin:0;
+min-height:100vh;
+font-family:Arial;
+color:white;
+text-align:center;
+transition: background 0.8s ease;
+background: radial-gradient(circle at center, #222 0%, #121212 70%);
+background-attachment: fixed;
+overflow-x:hidden;
+}
+.container{
+margin-top:60px;
+}
+
+img{
+width:300px;
+height:300px;
+border-radius:20px;
+box-shadow:0 0 25px rgba(0,0,0,0.6);
+margin-bottom:20px;
+object-fit:cover;
+}
+
+button{
+padding:15px 40px;
+font-size:18px;
+border:none;
+border-radius:30px;
+background:white;
+color:#1DB954;
+cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h1>🎧 Recomendador Musical 🎧</h1>
+<img id="albumImg" src="">
+<h2 id="songName"></h2>
+<h3 id="artistName"></h3>
+
+<br><br>
+
+<button onclick="prevSong()">⏮ Regresar</button>
+<button onclick="nextSong()">⏭ Siguiente</button>
+
+<br><br>
+
+<audio id="audioPlayer" controls autoplay></audio>
+
+</div>
+
+<script>
+
+const songs = [
+
+{
+artist:"Bad Bunny",
+name:"Tití Me Preguntó",
+img:"imagenes/titi-me-pregunto.jpg",
+audio:"audio/titi-me-pregunto.mp3"
+},
+
+{
+artist:"Peso Pluma",
+name:"Alley Oop",
+img:"imagenes/alley-oop.png",
+audio:"audio/alley-oop.mp3"
+},
+
+{
+artist:"Junior H",
+name:"Mientras Tu Duermes",
+img:"imagenes/mientras-tu-duermes.jpg",
+audio:"audio/mientras-tu-duermes.mp3"
+},
+
+{
+artist:"Bad Bunny",
+name:"La Romana",
+img:"imagenes/la-romana.png",
+audio:"audio/la-romana.mp3"
+},
+
+{
+artist:"Tito Doble P",
+name:"POR SUS BESOS",
+img:"imagenes/por-sus-besos.jpg",
+audio:"audio/por-sus-besos.mp3"
+},
+
+{
+artist:"Fools Garden",
+name:"Lemon Tree",
+img:"imagenes/lemon-tree.webp",
+audio:"audio/lemon-tre.mp3"
+}
+
+];
+
+let shuffledSongs = [];
+let currentIndex = 0;
+
+// Mezclar canciones
+function shuffle(array){
+for(let i = array.length - 1; i > 0; i--){
+const j = Math.floor(Math.random() * (i + 1));
+[array[i], array[j]] = [array[j], array[i]];
+}
+return array;
+}
+
+function startShuffle(){
+shuffledSongs = shuffle([...songs]);
+currentIndex = 0;
+}
+
+function loadSong(index){
+
+const song = shuffledSongs[index];
+
+const albumImg = document.getElementById("albumImg");
+const audio = document.getElementById("audioPlayer");
+
+albumImg.src = song.img;
+document.getElementById("songName").innerText = song.name;
+document.getElementById("artistName").innerText = song.artist;
+
+audio.src = song.audio;
+audio.play();
+
+// Cuando la imagen termine de cargar
+albumImg.onload = function(){
+
+const canvas = document.createElement("canvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = albumImg.width;
+canvas.height = albumImg.height;
+
+ctx.drawImage(albumImg, 0, 0, canvas.width, canvas.height);
+
+const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+const data = imageData.data;
+
+let r = 0;
+let g = 0;
+let b = 0;
+let count = 0;
+
+// Saltamos píxeles para que sea más rápido
+for(let i = 0; i < data.length; i += 80){
+r += data[i];
+g += data[i + 1];
+b += data[i + 2];
+count++;
+}
+
+r = Math.floor(r / count);
+g = Math.floor(g / count);
+b = Math.floor(b / count);
+
+// Creamos el fondo dinámico
+document.body.style.background =
+document.body.style.background = `
+radial-gradient(circle at 50% 40%, 
+rgba(${r},${g},${b},0.8) 0%, 
+rgba(${r},${g},${b},0.4) 30%, 
+#121212 70%)
+`;
+
+};
+
+}
+
+function nextSong(){
+
+currentIndex++;
+
+if(currentIndex >= shuffledSongs.length){
+startShuffle();
+}
+
+loadSong(currentIndex);
+}
+
+function prevSong(){
+
+currentIndex--;
+
+if(currentIndex < 0){
+currentIndex = shuffledSongs.length - 1;
+}
+
+loadSong(currentIndex);
+}
+
+// Cuando termina la canción → siguiente automática
+document.getElementById("audioPlayer").addEventListener("ended", nextSong);
+
+// Iniciar
+startShuffle();
+loadSong(currentIndex);
+
+</script>
+
+</body>
+</html>
